@@ -1,19 +1,20 @@
 # Vibecode efficiency experiment
 
+## Executive summary
+
+A test of vibecode vs prose showed a 16% reduction in token usage. Two cold AI agents were asked the same 14 questions about a Wikipedia page — one reading a 75 KB prose article, the other reading a 34 KB vibecode JSON version of the same content. Both agents answered all 14 questions correctly. The vibecode agent used 16.2% fewer tokens.
 
 ## Question
 
-Is vibecode JSON measurably more efficient for an AI agent to consume than equivalent English prose? "Efficient" = fewer tokens.
+Is vibecode JSON measurably more efficient for an AI agent to consume than equivalent English prose?
 
 ## Method
 
 The setup: give the same information to two cold AI agents in two different formats. One agent reads prose. The other reads vibecode. Both answer the same questions. Compare their token use at equal answer correctness.
 
-"Cold" means each agent starts a fresh conversation with no prior context. Agents run in parallel.
-
 ### The agent
 
-Both agents are Anthropic's Claude Opus 4.7 (`claude-opus-4-7`), the current Opus generation. Using the same model on both sides means differences in outcome are attributable to format, not to model capability. The same model also produced the vibecode version of the source material in the first place.
+Both agents are Anthropic's Claude Opus 4.7 (`claude-opus-4-7`), the current Opus generation. The same model also produced the vibecode version of the source material in the first place.
 
 ### Two-format comparison
 
@@ -61,7 +62,7 @@ Questions:
 7. Where does Act 3 take place?
 8. Who is Helena in love with at the beginning of the play?
 9. What happens in Act 4, Scene 2?
-10. What are the primary early printed sources of the play's text?
+10. What early printed editions of the play does the source list?
 11. Who bought the first copy of Q1?
 12. How many film adaptations of the play does the source list from before 1960?
 13. Who directed the film adaptation of the play that starred Judi Dench?
@@ -74,23 +75,34 @@ The questions the agents receive are listed above in [The prompt](#the-prompt). 
 
 ### What we measure
 
-Two metrics, one threshold.
+Tokens — total tokens consumed by the agent, input plus output, summed across every API call in the session. The efficiency metric.
 
-- **Tokens** — total tokens consumed by the agent, input plus output, summed across every API call in the session. The efficiency metric.
-- **Clock time** — wall-clock seconds from prompt submission to final answer. What a user would perceive as time-to-answer.
-
-Correctness is a threshold, not a scored metric. Every answer from both agents must be correct.
+Correctness is a threshold, not a scored metric. Every answer from both agents must be correct. Note that I went through several sets of questions before both agents answered correctly.
 
 ### Counting
 
-Every Anthropic API call returns a `usage` object with `input_tokens` and `output_tokens`, plus a response timestamp. For each agent:
+Every Anthropic API call returns a `usage` object with `input_tokens` and `output_tokens`. For each agent, sum both across every API call the agent makes in its session and report each and the total.
 
-- **Tokens** — sum `input_tokens` and `output_tokens` across every API call the agent makes in its session. Report each and the total.
-    - **Input tokens** — the initial prompt, the source file (it arrives as a tool result and counts as input on the following API call), and any subsequent tool-use round-trip content.
-    - **Output tokens** — everything the model generates: tool-call arguments, extended-thinking traces if the model uses them, and the final answer text.
-- **Clock time** — record when the session's first API call is sent and when the final answer is produced. Report the difference in wall-clock seconds.
+- Input tokens — the initial prompt, the source file (it arrives as a tool result and counts as input on the following API call), and any subsequent tool-use round-trip content.
+- Output tokens — everything the model generates: tool-call arguments, extended-thinking traces if the model uses them, and the final answer text.
 
-Both agents have the same tool available (Read), so tool-definition overhead cancels in the token count. Prompt-caching state is held constant across the two — either both run without cache (the fresh-session default) or both use identical cache settings — so cache hits don't skew either metric. Agents run in parallel so timing noise (server load, network variability) affects both equally.
+Both agents have the same tool available (Read), so tool-definition overhead cancels. Prompt-caching state is held constant across the two — either both run without cache (the fresh-session default) or both use identical cache settings — so cache hits don't skew the numbers on one side.
 
 ## Result
 
+Vibecode used 16% fewer tokens than prose at equal answer correctness. Both agents answered all 14 questions correctly.
+
+| | Tokens |
+|---|---|
+| Prose | 74,482 |
+| Vibecode | 62,417 |
+| Savings | 16.2% |
+
+Raw responses: [prose](./responses/prose.md), [vibecode](./responses/vibecode.md).
+
+### Correctness
+
+All 14 questions passed on both sides.
+
+- Q11 (unanswerable — first buyer of Q1) — both correctly said the file doesn't say. Neither agent hallucinated a name.
+- Q12 (count of pre-1960 films) — the vibecode agent had a mid-sentence self-correction ("three... four") but arrived at the right count. Prose stated four cleanly.

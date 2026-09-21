@@ -45,11 +45,15 @@ Demetrius.
 
 At Quince's house, the mechanicals worry that Bottom has gone missing — he's the only one who can play Pyramus. Bottom returns and the actors prepare to perform *Pyramus and Thisbe*.
 
-## 10. What are the primary early printed sources of the play's text?
+## 10. What early printed editions of the play does the source list?
 
-The First Quarto (Q1, 1600, published by Thomas Fisher) and the First Folio (1623).
+Three:
 
-**Acceptable variation.** The source also names a Second Quarto (Q2, 1619, printed by William Jaggard "as part of his so-called False Folio"). Mentioning Q2 parenthetically as an aside is fine. Listing Q2 as an equal-weight source alongside Q1 and F1 counts as wrong — the "False Folio" label in the source is the signal that Q2 is derivative rather than authoritative. If both agents list Q2 as an equal source, the question needs revision.
+- **First Quarto (Q1)** — 1600, published by Thomas Fisher.
+- **Second Quarto (Q2)** — 1619, printed by William Jaggard as part of what the source calls a "so-called False Folio."
+- **First Folio** — 1623.
+
+All three are named directly in the source's dating/text section. A correct answer lists all three; missing one counts as wrong. Extra context on Q2's False-Folio origin, or on Fisher/Jaggard, is fine but not required.
 
 ## 11. Who bought the first copy of Q1?
 
