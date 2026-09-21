@@ -54,19 +54,23 @@ Questions:
 
 1. What is each mechanical's trade?
 2. In what year and at what venue was the play first performed at court?
-3. Name three film adaptations from the 2010s, with year and director for each.
-4. Who ends up marrying whom?
-5. What is the name of the flower that Puck picks for Oberon?
-6. What is the play within the play?
-7. Who plays Thisbe?
-8. Where does Act 3 take place?
-9. Who is Helena in love with at the beginning of the play?
-10. What happens in Act 4, Scene 2?
+3. Who ends up marrying whom?
+4. What is the name of the flower that Puck picks for Oberon?
+5. What is the play within the play?
+6. Who plays Thisbe?
+7. Where does Act 3 take place?
+8. Who is Helena in love with at the beginning of the play?
+9. What happens in Act 4, Scene 2?
+10. What are the primary early printed sources of the play's text?
+11. Who bought the first copy of Q1?
+12. How many film adaptations of the play does the source list from before 1960?
+13. Who directed the film adaptation of the play that starred Judi Dench?
+14. Whose 1964 interpretation of the play does the source describe as controversial?
 ~~~
 
 ### Questions and expected answers
 
-The questions the agents receive are listed above in [The prompt](#the-prompt). Expected answers for each — with contamination-check notes where the source and training memory diverge — live in the [answer-key appendix](./answer-key.md), separate from the prompt so an agent doing the task never sees them.
+The questions the agents receive are listed above in [The prompt](#the-prompt). Expected answers for each live in the [answer-key appendix](./answer-key.md), separate from the prompt so an agent doing the task never sees them.
 
 ### What we measure
 
@@ -75,7 +79,7 @@ Two metrics, one threshold.
 - **Tokens** — total tokens consumed by the agent, input plus output, summed across every API call in the session. The efficiency metric.
 - **Clock time** — wall-clock seconds from prompt submission to final answer. What a user would perceive as time-to-answer.
 
-Correctness is the threshold, not a scored metric. **All answers must be correct.** If an agent gets any answer wrong, that run does not count. Comparing tokens or clock time at unequal correctness would be measuring nothing meaningful — a format that reaches a wrong answer faster or cheaper isn't more efficient, it's just wrong.
+Correctness is a threshold, not a scored metric. Every answer from both agents must be correct.
 
 ### Counting
 
@@ -87,10 +91,6 @@ Every Anthropic API call returns a `usage` object with `input_tokens` and `outpu
 - **Clock time** — record when the session's first API call is sent and when the final answer is produced. Report the difference in wall-clock seconds.
 
 Both agents have the same tool available (Read), so tool-definition overhead cancels in the token count. Prompt-caching state is held constant across the two — either both run without cache (the fresh-session default) or both use identical cache settings — so cache hits don't skew either metric. Agents run in parallel so timing noise (server load, network variability) affects both equally.
-
-### Training contamination
-
-*A Midsummer Night's Dream* is in every large model's training corpus, and some questions may be answerable from training memory alone. Questions are designed to probe specific facts that reward reading the source over recalling it — exact character trades, precise year-venue pairings, specific director-and-year combinations. Where a question can plausibly be answered from memory, that possibility is flagged in the analysis.
 
 ## Result
 
