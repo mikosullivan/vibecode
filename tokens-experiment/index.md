@@ -38,15 +38,59 @@ For each question in the list below:
 3. Each agent reads its file and produces an answer independently.
 4. Record for each: tokens consumed (input + output) and the answer.
 
+### The prompt
+
+Both agents receive the same prompt, identical except that Agent A's prompt references `midsummer.txt` and Agent B's prompt references `midsummer.json`. The prose-agent prompt in full:
+
+~~~
+You are answering questions about Shakespeare's A Midsummer Night's Dream.
+
+Read the file at midsummer.txt|midsummer.json in full. Then answer
+each of the questions below using only information from that file. If
+a question cannot be answered from the file, say so; do not fall back
+on information you may recall from training.
+
+Questions:
+
+1. What is each mechanical's trade?
+2. In what year and at what venue was the play first performed at court?
+3. Name three film adaptations from the 2010s, with year and director for each.
+4. Who ends up marrying whom?
+5. What is the name of the flower that Puck picks for Oberon?
+6. What is the play within the play?
+7. Who plays Thisbe?
+8. Where does Act 3 take place?
+9. Who is Helena in love with at the beginning of the play?
+10. What happens in Act 4, Scene 2?
+~~~
+
+### Questions and expected answers
+
+The questions the agents receive are listed above in [The prompt](#the-prompt). Expected answers for each — with contamination-check notes where the source and training memory diverge — live in the [answer-key appendix](./answer-key.md), separate from the prompt so an agent doing the task never sees them.
+
 ### What we measure
 
-- **Token consumption** — the efficiency metric. Input tokens (mostly the source file itself) plus output tokens (the answer).
-- **Answer correctness** — did each agent produce a correct answer? Checked against the source.
+Two metrics, one threshold.
 
-Answer correctness has to hold at parity before token savings mean anything. If vibecode costs half the tokens but produces worse answers, the compression is lossy at the depth we care about.
+- **Tokens** — total tokens consumed by the agent, input plus output, summed across every API call in the session. The efficiency metric.
+- **Clock time** — wall-clock seconds from prompt submission to final answer. What a user would perceive as time-to-answer.
+
+Correctness is the threshold, not a scored metric. **All answers must be correct.** If an agent gets any answer wrong, that run does not count. Comparing tokens or clock time at unequal correctness would be measuring nothing meaningful — a format that reaches a wrong answer faster or cheaper isn't more efficient, it's just wrong.
+
+### Counting
+
+Every Anthropic API call returns a `usage` object with `input_tokens` and `output_tokens`, plus a response timestamp. For each agent:
+
+- **Tokens** — sum `input_tokens` and `output_tokens` across every API call the agent makes in its session. Report each and the total.
+    - **Input tokens** — the initial prompt, the source file (it arrives as a tool result and counts as input on the following API call), and any subsequent tool-use round-trip content.
+    - **Output tokens** — everything the model generates: tool-call arguments, extended-thinking traces if the model uses them, and the final answer text.
+- **Clock time** — record when the session's first API call is sent and when the final answer is produced. Report the difference in wall-clock seconds.
+
+Both agents have the same tool available (Read), so tool-definition overhead cancels in the token count. Prompt-caching state is held constant across the two — either both run without cache (the fresh-session default) or both use identical cache settings — so cache hits don't skew either metric. Agents run in parallel so timing noise (server load, network variability) affects both equally.
 
 ### Training contamination
 
 *A Midsummer Night's Dream* is in every large model's training corpus, and some questions may be answerable from training memory alone. Questions are designed to probe specific facts that reward reading the source over recalling it — exact character trades, precise year-venue pairings, specific director-and-year combinations. Where a question can plausibly be answered from memory, that possibility is flagged in the analysis.
 
 ## Result
+
