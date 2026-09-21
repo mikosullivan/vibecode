@@ -1,18 +1,10 @@
 # Vibecode
 
-~~~vibecode
-{"vibecode": {
-	"doc": "vibecode-standard",
-	"role": "Stub for the official vibecode standard. Being rebuilt from concepts Miko is listing in no particular order; the writing-up happens as each concept lands.",
-	"status": "stub — active rebuild",
-	"audience": "AI agents consuming vibecode files, publishers exposing them at URLs, and standards-body reviewers"}}
-~~~
-
-Vibecode is the JSON format AI agents already use to exchange **structured context**. When an AI writes for another AI, JSON is what it reaches for. The vibecode format just put a think layer of standardization over the existing norm.
+Vibecode is the JSON format AI agents already use to exchange structured context. When an AI writes for another AI, JSON is what it reaches for. The vibecode format just put a think layer of standardization over the existing norm.
 
 Two illustrations of what a vibecode file carries in practice.
 
-**Coding conventions** for an organization's Python codebase:
+Coding conventions for an organization's Python codebase:
 
 ~~~json
 {
@@ -37,7 +29,7 @@ Two illustrations of what a vibecode file carries in practice.
 
 An AI writing Python for this org fetches the file, reads the fields, applies the conventions. No `STYLE.md` parse; no guessing whether a bullet is normative.
 
-**Domain vocabulary** naming the terms of an ecosystem:
+Domain vocabulary naming the terms of an ecosystem:
 
 ~~~json
 {
@@ -68,9 +60,9 @@ That's the efficiency argument for the format. Vibecode arrives already parsed. 
 
 Pre-parsing buys the reader two things at once — a cheaper read and a more accurate one.
 
-**Cheaper.** Markdown carries formatting bytes that mean nothing — heading levels, bullet markers, code-fence delimiters, indentation. Tokens on layout the AI never uses. Tokens on inferring that a bulleted list under a `## Style` heading means "here are style rules." Vibecode elides both — structural bytes are lookup keys, and the inference is done once by the author.
+Cheaper. By providing preparsed information, vibecode drops the tokens an AI would otherwise spend on markdown's formatting information (e.g. heading levels) and on inferring what those formatting choices mean.
 
-**Clearer.** Markdown is a formatting convention, not a semantic one. Is a `## Style` heading a rule set or a topic label? Is a code block required or suggested? Is a bullet normative or descriptive? The reader guesses; guesses land wrong. Vibecode names the semantic. `rules:` is rules. `examples:` is examples. `required:` is required. The reader does not infer.
+More accurate. Markdown is a formatting convention, not a semantic one. By removing noise from the document, agents get a cleaner representation of what they need to know.
 
 ## Concepts
 
