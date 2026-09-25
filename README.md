@@ -116,184 +116,22 @@ The consumer follows the redirect and matches the fragment against each node's `
 
 `meta` is a hash of orientation fields — the ones that let a reader decide, at a glance, whether the node is relevant without reading the payload. Any node MAY carry a meta block, at any nesting level.
 
-The sub-fields below are spec-defined. Each carries a fixed meaning readers can rely on. A meta block may include any of them or none. Publishers may add their own alongside; readers ignore sub-fields they don't recognize.
+Publishers may add their own sub-fields; readers ignore the ones they don't recognize. The spec-defined vocabulary — `title`, `brief`, `audience`, `links`, `superseded_by`, and the reverse-link fields the link builder computes — is specified on [the meta page](docs/graph/meta/).
 
-#### `title`
+## The link builder
 
-Short human-readable name for the node — a phrase, not a sentence.
+A **link builder** walks a site's graph and populates the fields derivable from other nodes. A site works without one; running one makes reverse-link navigation possible.
 
-~~~json
-{
-	"title": "Starfleet phaser bank calibration"
-}
-~~~
+At minimum, a link builder computes the two reverse-link fields spec'd above:
 
-#### `brief`
-
-Description of what the node is or does. A single-sentence string, or a hash of related fields when the description has parts — the format is intentionally open. Either form sits next to `title` in sitemaps, search results, and indexes.
-
-Scalar form:
-
-~~~json
-{
-	"brief": "How the Enterprise-D's main phaser array is calibrated during a scheduled overhaul."
-}
-~~~
-
-Hash form, when the description has parts worth naming:
-
-~~~json
-{
-	"brief": {
-		"one_liner": "Phaser bank calibration procedure for the Enterprise-D",
-		"when": "scheduled overhauls; also after any battle damage to the array",
-		"why_it_matters": "misalignment reduces effective range by up to 40%"
-	}
-}
-~~~
-
-#### `audience`
-
-Who the node is written for. A short phrase naming the target reader.
-
-~~~json
-{
-	"audience": "AI agents writing engineering-officer dialogue for Star Trek fan-fiction"
-}
-~~~
-
-#### `tags`
-
-Topic markers for filtering and grouping. Required shape is a hash with truthy values. The hash form is fixed so per-tag metadata can attach later without restructuring.
-
-Keys identify a tag on the **current site**. A bare name resolves to `<site>/tags/<name>/`; a bare uuid resolves through the search API. Cross-site references use the full URL. The name form is compact and human-readable; the uuid form is stable across renames.
-
-~~~json
-{
-	"tags": {
-		"weapons": true,
-		"calibration": true,
-		"engineering-procedure": true
-	}
-}
-~~~
-
-#### `see_also`
-
-Pointers to related nodes. Same hash-shape rule as `tags`: keys identify related nodes, values are short descriptions of *why* the two are related.
-
-Keys follow the same current-site rule. Bare uuid is the preferred compact form. Full URL for cross-site.
-
-The relationship description is what makes `see_also` useful: a reader following a link knows WHY it was worth following, not just that it existed.
-
-Example — a procedure links to the function it invokes and to the workflow it belongs to. Both on the same site, so bare uuids:
-
-~~~json
-{
-	"see_also": {
-		"018f1234-5678-7abc-def0-123456789abc": "the procedure invokes this function to compute the ship's approach vector",
-		"018fabcd-1234-7000-9abc-fedcba987654": "part of the same tactical-maneuver workflow"
-	}
-}
-~~~
-
-#### `superseded_by`
-
-Pointers to the nodes that supersede this one. Same hash-shape rule as `tags` and `see_also`. Keys identify the successors; values describe what is superseded and how.
-
-Bare identifiers resolve against the current site (same rule as `tags` and `see_also`).
-
-The value is prose. An author writes what a reader needs in order to decide whether to follow the pointer. Common patterns:
-
-- **Full replacement.** The entire current node is obsolete; treat this node as historical.
-- **Rename.** A straight rename to a new identifier, same content.
-- **Partial supersession.** Only part of the node is superseded (a specific section or field). The reader still uses the rest.
-- **Split.** The content was divided across multiple successors — each gets its own key with a description of what it covers.
-
-Example — the old phaser-bank calibration procedure, superseded by an updated one:
-
-~~~json
-{
-	"superseded_by": {
-		"018f2222-3333-7abc-def0-444455556666": "full replacement — the new procedure covers the same scope with updated tolerances for the Galaxy-class refit"
-	}
-}
-~~~
-
-A reader that finds `superseded_by` should follow the pointer before acting on the node's content, unless the prose narrows the scope.
-
-Three more meta sub-fields are **reverse-link fields** — computed by the site's normalizer, not written by the author. For every author-written link INTO a node (a tag, a `see_also`, a `superseded_by`), the target's `meta` gets a matching reverse-link entry. A site without a normalizer will not have these fields.
-
-#### `members`
-
-Nodes on the current site that reference this node via their `meta.tags`. Populated by the normalizer on tag documents. Other nodes carry no `members` field.
-
-Same hash shape as `tags`. Keys identify member nodes. Each value is whatever the source wrote in its `meta.tags` entry — `true` for bare membership, a metadata hash when the source added detail.
-
-~~~json
-{
-	"members": {
-		"018f1111-2222-7abc-def0-333344445555": true,
-		"018f3333-4444-7abc-def0-666677778888": {"role": "primary explanation"}
-	}
-}
-~~~
-
-#### `referenced_by`
-
-Nodes on the current site whose `meta.see_also` points at this node. The reverse link of `see_also` — a reader on this node sees who else considers it relevant, and why, without walking outward.
-
-Same hash shape as `see_also`. Keys identify referring nodes; values are copies of the descriptions those nodes wrote.
-
-~~~json
-{
-	"referenced_by": {
-		"018f1111-2222-7abc-def0-333344445555": "the procedure invokes this function to compute the ship's approach vector"
-	}
-}
-~~~
-
-#### `supersedes`
-
-Nodes on the current site whose `meta.superseded_by` names this node. The reverse link of `superseded_by` — a reader on the successor sees what it replaces and how, without fetching every predecessor.
-
-Same hash shape as `superseded_by`. Keys identify predecessors; values are copies of the descriptions those predecessors wrote.
-
-~~~json
-{
-	"supersedes": {
-		"018f2222-3333-7abc-def0-444455556666": "full replacement — the new procedure covers the same scope with updated tolerances for the Galaxy-class refit"
-	}
-}
-~~~
-
-### Tag documents
-
-Every tag named in a `meta.tags` block SHOULD have a **tag document** at `<site>/tags/<tagname>/` — a node describing what the tag means and how a reader should think about tagged content. Tags are high-level topics that apply broadly across a site; the tag document is where a reader learns the vocabulary before drilling into any specific tagged node.
-
-Tag documents are addressable by directory name. Unlike other documents (cited by uuid via the search API), a tag document is cited by its tag name. On the Caspian vibecode site:
-
-~~~
-https://vibecode.caspian.uno/tags/pipes/
-~~~
-
-The path segment IS the tag name — no extension, no wrapping structure. Hyphenated tag names follow the same rule: `<site>/tags/ai-friendly/`.
-
-## The normalizer
-
-A **normalizer** walks a site's graph and populates the fields derivable from other nodes. A site works without one; running one makes reverse-link navigation possible.
-
-At minimum, a normalizer computes the three reverse-link fields spec'd above:
-
-- **`meta.members`** on a tag document — every node whose `meta.tags` references the tag.
-- **`meta.referenced_by`** on a target node — every node whose `meta.see_also` points at it.
+- **`meta.backlinks`** on a target node — every node whose `meta.links` points at it.
 - **`meta.supersedes`** on a successor node — every node whose `meta.superseded_by` names it.
 
-A normalizer may compute other site-level fields — canonical sitemap, per-document breadcrumbs, anything else derivable from the graph. Site-specific extensions, not spec-level requirements.
+A link builder may compute other site-level fields — canonical sitemap, per-document breadcrumbs, anything else derivable from the graph. Site-specific extensions, not spec-level requirements.
 
-A normalizer SHOULD be idempotent. A site MAY run it on every change, on a schedule, or on demand — the spec picks no cadence.
+A link builder SHOULD be idempotent. A site MAY run it on every change, on a schedule, or on demand — the spec picks no cadence.
 
-A reader treats derived fields as a snapshot from the last pass, not as ground truth. A stale reverse link means the normalizer hasn't caught up. Reverse links are a navigation convenience; the author-supplied forward links (`tags`, `see_also`, `superseded_by`) are the authoritative graph.
+A reader treats derived fields as a snapshot from the last pass, not as ground truth. A stale reverse link means the link builder hasn't caught up. Reverse links are a navigation convenience; the author-supplied forward links (`links`, `superseded_by`) are the authoritative graph.
 
 ## The `vibecode` wrapper
 
