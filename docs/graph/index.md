@@ -27,7 +27,7 @@ Concepts in the graph can reference each other with just a UUID:
 	"meta": {
 		"links": {
 			"018f1234-5678-7abc-def0-123456789abc": {
-				"rel": "reference"
+				"rel": "the vocabulary this document's class names come from"
 			}
 		}
 	}
@@ -41,7 +41,7 @@ That is the authoring form. A built graph carries the resolved location alongsid
 	"meta": {
 		"links": {
 			"018f1234-5678-7abc-def0-123456789abc": {
-				"rel": "reference",
+				"rel": "the vocabulary this document's class names come from",
 				"url": "/starfleet/ship-classes.json#018f1234-5678-7abc-def0-123456789abc",
 				"canonical_url": "https://vibecode.caspian.uno/uuid/018f1234-5678-7abc-def0-123456789abc"
 			}

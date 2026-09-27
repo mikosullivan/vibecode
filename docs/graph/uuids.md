@@ -3,7 +3,7 @@
 ~~~vibecode
 {"vibecode": {
 	"doc": "vibecode-standard-uuids-txt",
-	"role": "Vibecode spec page describing the `uuids.txt` file at a graph root — a flat, UUID-sorted list of the concepts in the graph that have UUIDs, giving the file holding each one and a short description of what it is. Covers the three tab-separated fields, the escaping and sorting rules, and why the file is plain text.",
+	"role": "Vibecode spec page describing the `uuids.txt` file at a graph root — a flat list of the concepts in the graph that have UUIDs, giving the file holding each one and a short description of what it is. Covers the three tab-separated fields, the escaping rules, and why the file is plain text.",
 	"status": "draft"
 }}
 ~~~
@@ -29,5 +29,3 @@ A concept with no UUID has no line here. The file is an index of what can be ref
 Fields are separated by a single tab. The UUID and the path MUST NOT contain a tab or a newline.
 
 The description is a JSON value serialized onto a single line. Tabs and newlines inside it MUST be written as the JSON escapes `\t` and `\n`, never as literal characters, and the value MUST NOT be pretty-printed across multiple lines. Whatever it holds, it cannot break the one-record-per-line rule.
-
-Lines MUST be sorted by UUID in ascending order.

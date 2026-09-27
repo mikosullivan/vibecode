@@ -10,7 +10,11 @@
 
 `meta` is a hash of orientation fields — the ones that let a reader decide, at a glance, whether the node is relevant without reading the payload. Any node MAY carry a meta block, at any nesting level.
 
-The sub-fields below are spec-defined. Each carries a fixed meaning readers can rely on. A meta block may include any of them or none. Publishers may add their own alongside; readers ignore sub-fields they don't recognize.
+**`meta` is closed.** The sub-fields below are the whole vocabulary. Each carries a fixed meaning readers can rely on. A node MAY carry any of them or none, and MUST NOT put anything else under `meta`.
+
+Whatever else a publisher wants to say goes in the body of the node, where nothing is reserved and nothing is restricted. Only two names are reserved anywhere in vibecode — `uuid` and `meta` — and the body is free of both.
+
+Closing it is what makes `meta` readable without discovery. A consumer knows the complete set of things it can find there, and a field that is not on the list is a mistake rather than an extension. A genuinely useful new orientation field earns its way onto the list by proving itself in the body first.
 
 ## `title`
 
@@ -66,7 +70,7 @@ References to other nodes, keyed by UUID. Each value is a hash describing the re
 {
 	"links": {
 		"018f1234-5678-7abc-def0-123456789abc": {
-			"rel": "reference",
+			"rel": "the vocabulary this document's class names come from",
 			"url": "/starfleet/ship-classes.json#018f1234-5678-7abc-def0-123456789abc",
 			"canonical_url": "https://vibecode.caspian.uno/uuid/018f1234-5678-7abc-def0-123456789abc"
 		},
@@ -103,6 +107,26 @@ The value can be any truthy JSON value. It is up to the author to decide the con
 ~~~
 
 A reader that finds `superseded_by` should follow the pointer before acting on the node's content, unless the value narrows the scope.
+
+## `base_url`
+
+The graph's deployed address. Carried on the home document only — it describes the graph, not the node it sits on.
+
+~~~json
+{
+	"meta": {
+		"base_url": "https://vibecode.caspian.uno"
+	}
+}
+~~~
+
+Everything the link builder writes is root-relative. `base_url` is what turns those paths into absolute, citable addresses: a node's `canonical_url` is `<base_url>/uuid/<X>`, and the graph's resolver answers at that same prefix.
+
+A graph served from the root of a host carries just the origin. A graph deployed under a path carries the path as well — `https://example.com/docs` — and its resolver sits at `https://example.com/docs/uuid/<X>`. No trailing slash.
+
+The home document MUST carry `base_url`. Without it a graph cannot express an absolute address, and the link builder stops rather than producing a graph whose `canonical_url` fields are quietly missing everywhere. A graph that exists only as a local file tree still declares the address it will be served at.
+
+This requirement may be relaxed later. The case for loosening it is a graph that genuinely has no address yet — one being drafted before anyone has decided where it will live. If that turns out to matter, `base_url` becomes optional and the builder omits `canonical_url` rather than stopping.
 
 ## Reverse-link fields
 

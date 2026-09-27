@@ -32,9 +32,13 @@ A document's address comes from its position in the tree, never from a field ins
 
 Nothing in a document says where the document lives. That is what lets a file move without any edit to its own contents — the builder recomputes every address on the next run.
 
+Absolute addresses come from [`meta.base_url`](./meta/) on the home document, which every graph carries. The builder takes no arguments and reads no configuration, so what it writes is a function of the graph and nothing else — the same graph built by two people produces the same bytes.
+
 ## What it generates
 
 This table is authoritative. Everything not listed here is author-controlled and passes through untouched. A builder that modifies something absent from this table has a bug.
+
+These fields are stripped before anything is recomputed, then written fresh. Whatever was in them — the last build's output, or something an author typed — is gone. The builder never merges with what it finds, so a value it wrote cannot go stale and a value an author wrote cannot survive.
 
 | Field | Location | Source |
 | :--- | :--- | :--- |
@@ -88,8 +92,8 @@ Conditions that fail a build:
 
 - **Malformed JSON.** A document does not parse.
 - **Duplicate UUID.** Two concepts in the graph carry the same `uuid`. The graph's UUID space has to be unique for the resolver and `uuids.txt` to mean anything.
+- **No address.** The graph has no home document, or its home document carries no `meta.base_url`. Absolute addresses cannot be composed, and a graph built without them would be silently missing every `canonical_url`.
 - **Dangling reference.** A `meta.links` key or a `meta.superseded_by` key names a UUID that exists nowhere in the graph. This is the dead-link condition the [consistency contract](./#internal-consistency) exists to prevent, caught at build time rather than by a reader.
-- **Author-written builder field.** A document supplies a `tgt`, a `backlinks`, or a `supersedes` of its own. These are the builder's to write; an author value is a sign of a misunderstanding worth surfacing rather than silently overwriting.
 
 An empty document (`{}`) or one still mid-draft is not a failure. It is skipped from the indexes and picked up once it has enough content to index. Mid-drafting is a valid state.
 

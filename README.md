@@ -116,7 +116,7 @@ The consumer follows the redirect and matches the fragment against each node's `
 
 `meta` is a hash of orientation fields — the ones that let a reader decide, at a glance, whether the node is relevant without reading the payload. Any node MAY carry a meta block, at any nesting level.
 
-Publishers may add their own sub-fields; readers ignore the ones they don't recognize. The spec-defined vocabulary — `title`, `brief`, `audience`, `links`, `superseded_by`, and the reverse-link fields the link builder computes — is specified on [the meta page](docs/graph/meta/).
+`meta` is closed. Its vocabulary — `title`, `brief`, `audience`, `links`, `superseded_by`, `base_url`, and the reverse-link fields the link builder computes — is the whole of what may appear there; anything else a publisher wants to say goes in the body of the node. Each field is specified on [the meta page](docs/graph/meta/).
 
 ## The link builder
 

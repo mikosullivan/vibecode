@@ -21,21 +21,39 @@ root of the graph.
 
 The home document — the concept served at the graph's root URL, and the entry point for a reader arriving with nothing but a hostname or a directory path.
 
+It is also where the graph declares its own address, in [`meta.base_url`](./meta/). No other document carries that field.
+
 ### `sitemap.json`
 
-An index of every document in the graph, one entry per document. Each entry carries the document's URL and its orientation fields, so a reader can decide what is worth fetching without fetching any of it:
+A map of every document in the graph, nested the way the directory tree is nested. One request gives a reader the whole inventory — what documents exist, what each is about, and where the hierarchy puts them.
 
 ~~~json
 {
-	"/starfleet/ship-classes.json": {
-		"title": "Starfleet ship classes",
-		"brief": "Canonical vocabulary for Federation vessel classes.",
-		"audience": "AI agents generating content about Starfleet ships"
+	"brief": "Root of the Starfleet technical documentation graph.",
+	"url": "/",
+	"canonical_url": "https://vibecode.caspian.uno/uuid/018f0000-0000-7000-8000-000000000000",
+	"children": {
+		"starfleet": {
+			"children": {
+				"ship-classes.json": {
+					"brief": "Canonical vocabulary for Federation vessel classes.",
+					"url": "/starfleet/ship-classes.json",
+					"canonical_url": "https://vibecode.caspian.uno/uuid/018f1111-1111-7000-8000-000000000000"
+				}
+			}
+		}
 	}
 }
 ~~~
 
-One request gives a reader the full inventory of the graph. An agent that has fetched the sitemap can filter and rank locally instead of asking the graph to search on its behalf.
+Every node has the same shape: the fields describing the document at that position, then a `children` hash holding what sits below it. Those fields are the same three a link's [`tgt`](./links.md) carries, so a reader parses the same descriptor here that it parses everywhere else.
+
+- **Keys are path segments.** Joining the keys from the root down to a node reconstructs that node's path, so the hierarchy is readable without parsing URL strings.
+- **`children`** holds the nodes below this one. Absent on a leaf.
+- **A grouping directory** — one with no document of its own — carries `children` and nothing else. A node without a `url` means there is no document at that position, not a missing field.
+- **The root node** is the document at the graph root, carrying the same fields as any other node rather than a special case at the top.
+
+The sitemap is page-level. A concept nested inside a document gets no entry here; [uuids.txt](./uuids.md) is the concept-level index. The two do not overlap — one answers what exists, the other answers where a given handle points.
 
 ### `uuids.txt`
 

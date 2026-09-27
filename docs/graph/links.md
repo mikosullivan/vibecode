@@ -18,18 +18,20 @@ Other fields are allowed and rarely warranted. If you are reaching for one, the 
 
 ## `rel`
 
-A link hash SHOULD have a `rel` field describing the relationship between the current node and the referenced node.
+A link hash SHOULD have a `rel` field saying **how this node relates** to the one it links to.
 
-`rel` is written for an AI audience, so it may take any format. A short name, a sentence, or a hash are all valid. There is no fixed vocabulary, and a consumer should read the value rather than match it against a known set.
+`rel` is about the relationship, not about the other node. "The vibecode site" names a destination; "the graph this document is published in" says what the connection is. Only the second is a `rel` — the first is a label, and a reader can already get the other node's name and description from its `tgt`.
+
+There is a test for this. A `rel` is copied verbatim into the [backlink](./backlinks.md) on the other node, where the arrow points the other way. A relationship still reads correctly there. A label turns into a description of whichever node the reader happens to be standing on, which is the node they least need described.
 
 ~~~json
 {
 	"links": {
 		"018f1234-5678-7abc-def0-123456789abc": {
-			"rel": "reference"
+			"rel": "prerequisite — this document assumes familiarity with it"
 		},
 		"018fabcd-1234-7000-9abc-fedcba987654": {
-			"rel": "the procedure invokes this function to compute the ship's approach vector"
+			"rel": "the execution model whose runtime state this schema stores"
 		},
 		"018f2222-3333-7abc-def0-444455556666": {
 			"rel": {
@@ -41,28 +43,7 @@ A link hash SHOULD have a `rel` field describing the relationship between the cu
 }
 ~~~
 
-## `tgt`
-
-Written by the link builder. `tgt` holds what a reader needs in order to decide whether to follow the link without fetching the target first — the target's brief, and where it lives.
-
-~~~json
-{
-	"links": {
-		"018fabcd-1234-7000-9abc-fedcba987654": {
-			"rel": "the procedure invokes this function to compute the ship's approach vector",
-			"tgt": {
-				"brief": "Computes an approach vector from current heading and target orbit.",
-				"url": "/starfleet/approach-vector.json#018fabcd-1234-7000-9abc-fedcba987654",
-				"canonical_url": "https://vibecode.caspian.uno/uuid/018fabcd-1234-7000-9abc-fedcba987654"
-			}
-		}
-	}
-}
-~~~
-
-`tgt` has the same structure as a backlink entry — see [backlinks](./backlinks.md). A link and a backlink are one relationship seen from its two ends: `tgt` describes the node being referenced, a backlink entry describes the node doing the referencing.
-
-`tgt` carries a shallow subset of the target's `meta`. It never carries the target's own `links`, which would pull in their targets, and theirs, without terminating.
+`rel` is written for an AI audience, so it may take any format. A short name, a sentence, or a hash are all valid. There is no fixed vocabulary, and a consumer should read the value rather than match it against a known set.
 
 ## Empty link hash
 
